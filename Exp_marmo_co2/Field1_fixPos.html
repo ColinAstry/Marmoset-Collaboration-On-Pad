@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>habit1</title>
+	<script src="http://code.jquery.com/jquery.js"></script>
+	 <style>
+/*2024.8.15 checked*/
+/*使用前，请更改title、stage、图片、图片位置随机序列*/
+/*设置基础格式*/
+	*{
+		margin: 0;
+		padding: 0;
+	}
+	html,body{
+		height: 100%;
+		width: 100%;
+	}
+	.fullscreen{
+		height: 100%;
+		width: 100%;
+		position: fixed;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		position: relative;
+	}
+/*动态图片按钮*/
+	.Gifbutton{
+		height: 100%;
+		width: 100%;
+		position: absolute;
+		z-index: 3;
+		border: 0;
+		outline: 0;
+	}
+/*背景空白按钮*/
+	.blankbutton{
+		height: 100%;
+		width: 100%;
+		position: fixed;
+		z-index: -3;
+	}
+    
+    </style>
+<script>
+/*定义数据格式：包含阶段、选择的按钮、按钮的位置、时间、触摸点坐标、手指序号*/
+var Responsedata = { "stage":[], "button": [], "positionLeft1": [], "positionLeft2": [],"positionLeft3": [], "positionTop": [], "abstime":[], "time": [], "location_x": [], "location_y":[], "finger":[]};
+var relativeHeight = "45%";
+var relativeWidth = "30%"; 
+var start_time = 0;
+var Responsecount = 0;
+var stage = 1; /*可根据猴子进度调整此处*////////////////////////////////////////////
+var posLeft1 = "0.33";
+var posLeft2 = "0.33";
+var posLeft3 = "0.33";
+var posTop = "0.33";
+var queueLeft1 = [1];
+var queueLeft2 = [1];
+var queueLeft3 = [1];
+var queueTop = [1];
+/*可根据猴子进度调整此处*////////////////////////////////////////////
+/*设置全屏、初始化*/
+	function requestFullScreen(element) {
+		rand_ini = Math.floor(Math.random()*(36));
+		$.post("/cmd", "Fullscreen", function () { })
+		$("#correct").css("height", relativeHeight);
+		$("#correct").css("width", relativeWidth);
+		$("#wrong").css("height", relativeHeight);
+        $("#wrong").css("width", relativeWidth);
+		$("#wrong2").css("height", relativeHeight);
+        $("#wrong2").css("width", relativeWidth);
+		var de = document.querySelector(element) || document.documentElement;
+		if (de.requestFullscreen) {
+			de.requestFullscreen();
+		} else if (de.mozRequestFullScreen) {
+			de.mozRequestFullScreen();
+		} else if (de.webkitRequestFullScreen) {
+			de.webkitRequestFullScreen();
+        } else if (de.msRequestFullscreen) {
+            de.msRequestFullscreen();
+        } else if (de.webkitEnterFullscreen) {
+            de.webkitEnterFullscreen(); //for iphone this code worked            
+        } else if (vid.webkitIsFullScreenn) {
+            vid.webkitIsFullScreen();
+        }
+		document.getElementById("startface").style.display = "none";
+		/*document.getElementById("container").style.display = "inline";*/
+        start_time = new Date().getTime();
+        $.post("/clock", start_time.toFixed(0), function (res, req) { });
+		localStorage.setItem("marmosetResponse", JSON.stringify(Responsedata));
+	}
+/*监听退出全屏事件*/
+if (document.addEventListener) {
+	document.addEventListener('webkitfullscreenchange', exitHandler, false);
+	 document.addEventListener('mozfullscreenchange', exitHandler, false);
+	document.addEventListener('fullscreenchange', exitHandler, false);
+	document.addEventListener('MSFullscreenChange', exitHandler, false);
+       	}
+function exitHandler() {
+	if (!document.webkitIsFullScreen && !document.mozFullScreen && !document.msFullscreenElement) {
+	document.getElementById("startface").style.display = "inline";
+	}
+}
+/*触摸动态图片，记录触摸事件，触发奖赏及空白屏*/
+$(function(){
+	$(".Gifbutton").on("touchstart",function(e){
+		var touch = e.originalEvent.touches;
+		var targetTouch = e.originalEvent.targetTouches;
+		var id = this.id
+		Responsedata.stage[Responsecount] = stage;
+		Responsedata.time[Responsecount] = new Date().getTime() - start_time;
+		Responsedata.abstime[Responsecount] = new Date().getTime()
+		Responsedata.button[Responsecount] = id;
+		Responsedata.positionLeft1[Responsecount] = posLeft1;
+		Responsedata.positionLeft2[Responsecount] = posLeft2;
+		Responsedata.positionLeft3[Responsecount] = posLeft3;
+		Responsedata.positionTop[Responsecount] = posTop;
+		Responsedata.location_x[Responsecount] = targetTouch[0].pageX;
+		Responsedata.location_y[Responsecount] = targetTouch[0].pageY;
+		Responsedata.finger[Responsecount] = touch.length;
+		localStorage.marmosetResponse = JSON.stringify(Responsedata);
+		Responsecount++;
+		if (this.id == "correct" || this.id == "wrong" || this.id == "wrong2") {
+			$(".Gifbutton").hide();
+			if (this.id == "correct" ) {
+			playSound()
+			setTimeout(function () { $.post("/cmd", id, function () { }) }, 1000);
+			setTimeout(function () { $.post("/cmd", "finish", function () { }) }, 3000);
+			}
+			setTimeout(function () { $(".Gifbutton").show() }, 8000);
+            var positionLeft = ["0%", "33%","66%"];
+			var positionLeftName = ["0.0" ,"0.33","0.66"];
+			var positionTop = ["0%","25%","33%"];
+			var positionTopName = ["0.0", "0.33","0.66"];
+			$("#correct").css("left", positionLeft[0]);
+			$("#correct").css("top", positionTop[1]);
+			$("#wrong").css("left", positionLeft[1]);
+			$("#wrong").css("top", positionTop[1]);
+			$("#wrong2").css("left", positionLeft[2]);
+			$("#wrong2").css("top", positionTop[1]);
+			posLeft1 = positionLeftName[0];
+			posLeft2 = positionLeftName[1];
+			posLeft3 = positionLeftName[2];
+			posTop = positionTopName[1];
+			rand_ini = rand_ini + 1;
+			if (rand_ini >= 36){
+				rand_ini = 0;
+			}
+		}
+	});
+});
+/*空白屏期间触摸，记录触摸事件*/
+$(function(){
+	$(".blankbutton").on("touchstart",function(e){
+		var touch = e.originalEvent.touches;
+		Responsedata.stage[Responsecount] = stage;
+		Responsedata.time[Responsecount] = new Date().getTime() - start_time;
+		Responsedata.abstime[Responsecount] = new Date().getTime()
+		Responsedata.button[Responsecount] = this.id;
+		Responsedata.positionLeft1[Responsecount] = "None";
+		Responsedata.positionLeft2[Responsecount] = "None";
+		Responsedata.positionLeft3[Responsecount] = "None";
+		Responsedata.positionTop[Responsecount] = "None";
+		Responsedata.location_x[Responsecount] = touch[touch.length-1].pageX;
+		Responsedata.location_y[Responsecount] = touch[touch.length-1].pageY;
+		Responsedata.finger[Responsecount] = touch.length;
+		localStorage.marmosetResponse = JSON.stringify(Responsedata);
+		Responsecount++;
+	});
+});
+/*下载数据*/
+function downloadJSON2CSV(string) {         
+	var array = JSON.parse(string);
+	var str = '';
+	for (var index in array) {
+		var line = '';
+		line += index + ',';
+		line += array[index] + ',';
+		str += line + '\r\n';
+	}
+	console.log(str);
+
+	// Get current date
+	var date = new Date();
+	var month = ("0" + (date.getMonth() + 1)).slice(-2); // Months are zero based
+	var day = ("0" + date.getDate()).slice(-2);
+
+	// Create filename
+	var filename = month + day + '.csv';
+
+	// Create a Blob from the CSV string
+	var blob = new Blob([str], { type: 'text/csv;charset=utf-8;' });
+
+	// Create a URL representing the Blob
+	var url = URL.createObjectURL(blob);
+
+	// Create a temporary anchor element
+	var link = document.createElement("a");
+	if (link.download !== undefined) { // feature detection
+		// Prepare the anchor element with the Blob URL and the desired file name
+		link.setAttribute("href", url);
+		link.setAttribute("download", filename);
+
+		// This is necessary as link.click() does not work on the latest firefox
+		link.style.visibility = 'hidden';
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+	}
+}
+
+</script>
+</body>
+</html>
+<script>
+/*
+        window.onload = function() {
+            var script = document.createElement('script');
+            script.src = "https://cdn.bootcss.com/eruda/1.5.4/eruda.min.js";
+            document.body.appendChild(script);
+            script.onload = function() {
+                eruda.init()
+            }
+        }*/
+</script>
+</head>
+<body>
+<div id="startface" style="z-index:4;">
+       	<button onclick="requestFullScreen()" style="display: inline; z-index:4;">全屏</button>
+       	<button onclick="downloadJSON2CSV(localStorage.marmosetResponse)" style="display:inline; z-index:4;">下载行为数据</button>
+</div>
+<div id="container" class='fullscreen' style="z-index:3;">
+	<button id='correct' class='Gifbutton' style="background: url(img/yellowstar.png); background-repeat: no-repeat; background-size: 100% 100%; z-index:3" ></button>
+	<button id='wrong' class='Gifbutton' style="background: url(img/bluecir.png); background-repeat: no-repeat; background-size: 100% 100%; z-index:2" ></button>
+	<button id='wrong2' class='Gifbutton' style="background: url(img/redcross.png); background-repeat: no-repeat; background-size: 100% 100%; z-index:2" ></button>
+	<button id='outside' class='Gifbutton' style="background: #000000; background-repeat: no-repeat; background-size: 100% 100%; z-index:1" ></button>
+	<button id='blank' class='blankbutton' style="background: #000000; background-repeat: no-repeat; background-size: 100% 100%;" ></button>
+</div>
+
+<script>
+// 播放声音的函数
+function playSound() {
+    var sound = new Audio("img/1_3_reverse_switch.wav");
+    sound.play();
+}
+</script>
+
+</body>
+</html>

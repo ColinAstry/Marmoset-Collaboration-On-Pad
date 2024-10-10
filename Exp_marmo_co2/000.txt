@@ -1,0 +1,6 @@
+Standard.py  Standard.html       2024.08.15 Checked, 2 img, random postion, normal sound and reward.
+H1.py        habit1.html         2024.08.15 Checked, 1 img, fixed postion, normal sound and reward.
+H2.py        habit2.html         2024.08.15 Checked, 1 img, random postion, normal sound and reward.
+F1.py        Field1_fixPos.html  2024.08.15 Checked, 3 img, fixed postion, normal sound and reward.
+F2.py        Field2_fixPos.html  2024.08.15 Checked, 3 img, fixed postion, correct = normal sound and reward; bonus = prolonged sound and more reward
+Original.py  Original.html       Original file provided by Liu Xingjian

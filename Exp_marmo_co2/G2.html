@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>test1</title>
+	<script src="http://code.jquery.com/jquery.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
+	<style>
+/*设置基础格式*/
+	*{
+		margin: 0;
+		padding: 0;
+	}
+	html,body{
+		height: 100%;
+		width: 100%;
+	}
+	.fullscreen{
+		height: 100%;
+		width: 100%;
+		position: fixed;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		position: relative;
+	}
+/*动态图片按钮*/
+	.Gifbutton{
+		height: 100%;
+		width: 100%;
+		position: absolute;
+		z-index: 3;
+		border: 0;
+		outline: 0;
+	}
+/*背景空白按钮*/
+	.blankbutton{
+		height: 100%;
+		width: 100%;
+		position: fixed;
+		z-index: -3;
+	}
+    
+    </style>
+
+<script>
+/*定义数据格式：包含阶段、选择的按钮、按钮的位置、绝对时间、时间、触摸点坐标、手指序号*/
+var Responsedata = { "button": [], "positionLeft": [], "positionTop": [],"positionLeftw": [], "positionTopw": [], "abstime":[], "time": [], "location_x": [], "location_y":[], "finger":[]};
+var relativeHeight = "30%";
+var relativeWidth = "30%"; 
+var start_time = 0;
+var Responsecount = 0;
+var stage = 2; /*可根据猴子进度调整此处*/
+var posLeft = "0.33";
+var posTop = "0.33";
+var posLeftw = "0.33";
+var posTopw = "0.33";
+var queueLeft = [0,1,2,0,1,0,2,0,1,2,1,2,0,1,2,2,0,0,1,2,1,0,1,2,0,0,1,1,2,0,1,2,2,1,2,0];
+var queueTop = [2,1,1,0,0,2,2,1,0,0,1,1,2,0,0,0,2,1,2,1,1,1,2,2,0,0,1,2,2,1,2,0,2,0,1,0];
+var queueLeftw = [1,0,1,2,2,1,0,1,0,1,2,1,2,2,0,1,2,1,0,0,2,2,0,1,1,2,0,2,0,2,2,0,1,0,0,1];
+var queueTopw = [1,0,0,2,1,0,1,0,2,1,2,2,1,2,1,2,0,2,0,2,0,0,1,0,1,1,2,1,0,2,0,2,1,1,0,2];
+
+/*连接服务器*/
+var socket = io.connect('/');
+socket.on('connect', function() {
+    console.log('Connected to server');
+});
+socket.on('disconnect', function() {
+    console.log('Disconnected from server');
+});
+/*设置全屏、初始化*/
+	function requestFullScreen(element) {
+		rand_ini = Math.floor(Math.random()*(36));
+		$.post("/cmd", "Fullscreen", function () { })
+		$("#correct").css("height", relativeHeight);
+		$("#correct").css("width", relativeWidth);
+		$("#wrong").css("height", relativeHeight);
+        $("#wrong").css("width", relativeWidth);
+		var de = document.querySelector(element) || document.documentElement;
+		if (de.requestFullscreen) {
+			de.requestFullscreen();
+		} else if (de.mozRequestFullScreen) {
+			de.mozRequestFullScreen();
+		} else if (de.webkitRequestFullScreen) {
+			de.webkitRequestFullScreen();
+        } else if (de.msRequestFullscreen) {
+            de.msRequestFullscreen();
+        } else if (de.webkitEnterFullscreen) {
+            de.webkitEnterFullscreen(); //for iphone this code worked            
+        } else if (vid.webkitIsFullScreenn) {
+            vid.webkitIsFullScreen();
+        }
+		document.getElementById("startface").style.display = "none";
+		/*document.getElementById("container").style.display = "inline";*/
+        start_time = new Date().getTime();
+        $.post("/clock", start_time.toFixed(0), function (res, req) { });
+		localStorage.setItem("marmosetResponse", JSON.stringify(Responsedata));
+	}
+/*监听退出全屏事件*/
+if (document.addEventListener) {
+	document.addEventListener('webkitfullscreenchange', exitHandler, false);
+	 document.addEventListener('mozfullscreenchange', exitHandler, false);
+	document.addEventListener('fullscreenchange', exitHandler, false);
+	document.addEventListener('MSFullscreenChange', exitHandler, false);
+       	}
+function exitHandler() {
+	if (!document.webkitIsFullScreen && !document.mozFullScreen && !document.msFullscreenElement) {
+	document.getElementById("startface").style.display = "inline";
+	}
+}
+/*触摸动态图片，记录触摸事件，触发奖赏及空白屏*/
+$(function(){
+	$(".Gifbutton").on("touchstart",function(e){
+		var touch = e.originalEvent.touches;
+		var targetTouch = e.originalEvent.targetTouches;
+		var id = this.id
+		/*Responsedata.stage[Responsecount] = stage;*/
+		Responsedata.time[Responsecount] = new Date().getTime() - start_time;
+		Responsedata.abstime[Responsecount] = new Date().getTime()
+		Responsedata.button[Responsecount] = id;
+		Responsedata.positionLeft[Responsecount] = posLeft;
+		Responsedata.positionTop[Responsecount] = posTop;
+		Responsedata.positionLeftw[Responsecount] = posLeftw;
+		Responsedata.positionTopw[Responsecount] = posTopw;
+		Responsedata.location_x[Responsecount] = targetTouch[0].pageX;
+		Responsedata.location_y[Responsecount] = targetTouch[0].pageY;
+		Responsedata.finger[Responsecount] = touch.length;
+		localStorage.marmosetResponse = JSON.stringify(Responsedata);
+		Responsecount++;
+		if (this.id == "correct" || this.id == "wrong") {
+            /*convert the value of rand_ini to a string, store it in num, and send it to the server*/
+            if (this.id == "correct" ) {
+			playSound()
+			}
+            var num = rand_ini.toString();
+			socket.emit('cmd', num);
+			setTimeout(function () { socket.emit('cmd', id); }, 1000);
+			setTimeout(function () { socket.emit('cmd', 'finish'); }, 5500);
+			
+			if (stage == 2) {
+				var positionLeft = ["0%", "33%","66%"];
+				var positionLeftName = ["0.0" ,"0.33","0.66"];
+				var positionTop = ["0%","33%","66%"];
+				var positionTopName = ["0.0", "0.33","0.66"];
+				$("#correct").css("left", positionLeft[queueLeft[rand_ini]]);
+				$("#correct").css("top", positionTop[queueTop[rand_ini]]);
+				$("#wrong").css("left", positionLeft[queueLeftw[rand_ini]]);
+				$("#wrong").css("top", positionTop[queueTopw[rand_ini]]);
+				posLeft = positionLeftName[queueLeft[rand_ini]];
+				posTop = positionTopName[queueTop[rand_ini]];
+				posLeftw = positionLeftName[queueLeftw[rand_ini]];
+				posTopw = positionTopName[queueTopw[rand_ini]];
+				rand_ini = rand_ini + 1;
+				if (rand_ini >= 36){
+					rand_ini = 0;
+				}
+				$(".Gifbutton").hide();
+			    setTimeout(function () { $(".Gifbutton").show() }, 8000);
+			}
+			
+
+		}
+	});
+});
+
+/*接收server信号，同步屏幕显示*/
+socket.on('number', function(data) {
+    var rand_ini = parseInt(data.num, 10);
+    console.log("Received: " + rand_ini);
+    $(".Gifbutton").hide();
+	setTimeout(function () { $(".Gifbutton").show() }, 8000);
+    var positionLeft = ["0%", "33%","66%"];
+	var positionLeftName = ["0.0" ,"0.33","0.66"];
+	var positionTop = ["0%","33%","66%"];
+	var positionTopName = ["0.0", "0.33","0.66"];
+	$("#correct").css("left", positionLeft[queueLeft[rand_ini]]);
+	$("#correct").css("top", positionTop[queueTop[rand_ini]]);
+	$("#wrong").css("left", positionLeft[queueLeftw[rand_ini]]);
+	$("#wrong").css("top", positionTop[queueTopw[rand_ini]]);
+	posLeft = positionLeftName[queueLeft[rand_ini]];
+	posTop = positionTopName[queueTop[rand_ini]];
+	posLeftw = positionLeftName[queueLeftw[rand_ini]];
+	posTopw = positionTopName[queueTopw[rand_ini]];
+	rand_ini = rand_ini + 1;
+	if (rand_ini >= 36){
+		rand_ini = 0;
+	}
+});
+
+socket.onerror = function(error) {
+    console.log("WebSocket error: " + error);
+};
+	
+
+/*空白屏期间触摸，记录触摸事件*/
+$(function(){
+	$(".blankbutton").on("touchstart",function(e){
+		var touch = e.originalEvent.touches;
+		Responsedata.stage[Responsecount] = stage;
+		Responsedata.time[Responsecount] = new Date().getTime() - start_time;
+		Responsedata.abstime[Responsecount] = new Date().getTime()
+		Responsedata.button[Responsecount] = this.id;
+		Responsedata.positionTop[Responsecount] = "none";
+		Responsedata.positionLeft[Responsecount] = "none";
+		Responsedata.location_x[Responsecount] = touch[touch.length-1].pageX;
+		Responsedata.location_y[Responsecount] = touch[touch.length-1].pageY;
+		Responsedata.finger[Responsecount] = touch.length;
+		localStorage.marmosetResponse = JSON.stringify(Responsedata);
+		Responsecount++;
+	});
+});
+
+/*下载数据*/
+function downloadJSON2CSV(string) {         
+	var array = JSON.parse(string);
+	var str = '';
+	for (var index in array) {
+		var line = '';
+		line += index + ',';
+		line += array[index] + ',';
+		str += line + '\r\n';
+	}
+	console.log(str);
+
+	// Get current date
+	var date = new Date();
+	var month = ("0" + (date.getMonth() + 1)).slice(-2); // Months are zero based
+	var day = ("0" + date.getDate()).slice(-2);
+
+	// Create filename
+	var filename = month + day + '.csv';
+
+	// Create a Blob from the CSV string
+	var blob = new Blob([str], { type: 'text/csv;charset=utf-8;' });
+
+	// Create a URL representing the Blob
+	var url = URL.createObjectURL(blob);
+
+	// Create a temporary anchor element
+	var link = document.createElement("a");
+	if (link.download !== undefined) { // feature detection
+		// Prepare the anchor element with the Blob URL and the desired file name
+		link.setAttribute("href", url);
+		link.setAttribute("download", filename);
+
+		// This is necessary as link.click() does not work on the latest firefox
+		link.style.visibility = 'hidden';
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+	}
+}
+
+  /*<script>
+	   window.onload = function() {
+            var script = document.createElement('script');
+            script.src = "https://cdn.bootcss.com/eruda/1.5.4/eruda.min.js";
+            document.body.appendChild(script);
+            script.onload = function() {
+                eruda.init()
+            }
+        } */
+</script>
+</head>
+
+<body>
+<div id="startface" style="z-index:4;">
+       	<button onclick="requestFullScreen()" style="display: inline; z-index:4;">全屏</button>
+       	<button onclick="downloadJSON2CSV(localStorage.marmosetResponse)" style="display:inline; z-index:4;">下载行为数据</button>
+</div>
+<div id="container" class='fullscreen' style="z-index:3;">
+	<button id='correct' class='Gifbutton' style="background: url(img/grecross.png); background-repeat: no-repeat; background-size: 100% 100%; z-index:3" ></button>
+	<button id='wrong' class='Gifbutton' style="background: url(img/red34thcir.png); background-repeat: no-repeat; background-size: 100% 100%; z-index:2" ></button>
+	<button id='outside' class='Gifbutton' style="background: #000000; background-repeat: no-repeat; background-size: 100% 100%; z-index:1" ></button>
+	<button id='blank' class='blankbutton' style="background: #000000; background-repeat: no-repeat; background-size: 100% 100%;" ></button>
+</div>
+
+<script>
+    // 播放声音的函数
+    function playSound() {
+        var sound = new Audio("img/1_3_reverse_switch.wav");
+        sound.play();
+    }
+</script>
+
+</body>
+</html>
