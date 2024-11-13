@@ -3,7 +3,10 @@ import subprocess
 
 #按键序列图和按键总数统计
 
-folder_path = r"D:\Research\MarmoCo2\Data\ToProcess"
+# folder_path = r"D:\Research\MarmoCo2\Data\ToProcess_Hab"
+folder_path = r"D:\Research\MarmoCo24fall\Data_B8\ToProcess"
+
+print(folder_path)
 
 current_dir = os.path.dirname(os.path.abspath(__file__))  # Define the variable current_dir
 

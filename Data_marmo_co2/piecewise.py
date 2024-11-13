@@ -7,7 +7,7 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 # Load your data into a pandas DataFrame
-file_path = r'D:\Xu_Haoxin\Research\Gradu_thesis\Data\trials\analysis\525.772hab1_20240526.xlsx'
+file_path = r'D:\Research\MarmoCo2\Data\ToProcess_Exp\analysis\xlsExp1_20241011.xlsx'
 df = pd.read_excel(file_path)
 
 # Filter rows where 'button' is either 'correct' or 'wrong'

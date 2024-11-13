@@ -3,8 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import sys
 
-#file_path = sys.argv[1]
-file_path = r'D:\Xu_Haoxin\Research\Gradu_thesis\Data\concise4\analysis\723test2_20240526.xlsx'
+file_path = sys.argv[1]
 
 # Read the original Excel file
 data = pd.read_excel(file_path)

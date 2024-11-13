@@ -4,7 +4,10 @@ import re
 
 #将预处理数据转换为纯净数据（剔除exp行，并重新对齐时间）
 
-dir_path = r'D:\Research\MarmoCo2\Data\ToFilter\precl'
+# dir_path = r'D:\Research\MarmoCo2\Data\ToFilter\precl'
+dir_path = r'D:\Research\MarmoCo24fall\Data_B8\ToFilter\precl'
+
+print(dir_path)
 min_abstime_dict = {}
 
 # Create the output directory if it doesn't exist

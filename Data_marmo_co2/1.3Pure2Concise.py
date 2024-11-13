@@ -5,7 +5,10 @@ from openpyxl import load_workbook
 #将纯净数据转换为简洁数据（剔除连续重复的行）
 
 # Define the directory containing the Excel files
-dir_path = r'D:\Research\MarmoCo2\Data\ToFilter\precl\Pure'
+# dir_path = r'D:\Research\MarmoCo2\Data\ToFilter\precl\Pure'
+dir_path = r'D:\Research\MarmoCo24fall\Data_B8\ToFilter\precl\Pure'
+
+print(dir_path)
 
 # Create a new subdirectory named "concise"
 os.makedirs(os.path.join(dir_path, 'concise'), exist_ok=True)

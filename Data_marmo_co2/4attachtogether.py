@@ -5,7 +5,7 @@ from datetime import datetime
 #change folder path, marmoset' ID and and expriments' name (bottom) before running
 ########################################################################################
 # Set the directory path
-folder_path = r"D:\Xu_Haoxin\Research\Gradu_thesis\Data434M2\ToProcess\613"
+folder_path = r"D:\Research\MarmoCo2\Data\ToProcess"
 
 # Get a list of all files in the folder
 file_list = os.listdir(folder_path)

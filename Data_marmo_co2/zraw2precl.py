@@ -91,5 +91,6 @@ def modify_xlsx_files(folder_path):
 import sys
 
 # The first argument is the script name itself, so we get the second argument
-folder_path = sys.argv[1]  # replace with your actual folder path
+# folder_path = sys.argv[1]  # replace with your actual folder path
+folder_path = r'D:\Research\MarmoCo2\Data\ToFilter'
 modify_xlsx_files(folder_path)

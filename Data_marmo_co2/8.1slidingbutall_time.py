@@ -2,11 +2,8 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# import sys
-# file_path = sys.argv[1]
-
-file_path = r'D:\Xu_Haoxin\Research\Gradu_thesis\Data\Concise2\analysis\723hab2_20240524.xlsx'  # replace with your actual folder path
-
+import sys
+file_path = sys.argv[1]
 
 # Read the Excel file
 df = pd.read_excel(file_path)
